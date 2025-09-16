@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using HotelApi.Data;
+using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -8,36 +9,74 @@ namespace HotelApi.Controllers
     [ApiController]
     public class HotelsController : ControllerBase
     {
+        private static List<Hotel> hotels = new List<Hotel>
+        {
+            new Hotel { Id = 1, Name = "Test", Address  = "123 Test", Rating = 4.5},
+            new Hotel { Id = 2, Name = "Test2", Address  = "123 Test2", Rating = 4.2}
+        };
+
         // GET: api/<HotelsController>
         [HttpGet]
-        public IEnumerable<string> Get()
+        public ActionResult<IEnumerable<Hotel>> Get()
         {
-            return new string[] { "value1", "value2" };
+            return Ok(hotels);
         }
 
         // GET api/<HotelsController>/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        public ActionResult<Hotel> Get(int id)
         {
-            return "value";
+            var hotel = hotels.FirstOrDefault(h => h.Id == id);
+            if (hotel == null)
+            {
+                return NotFound();
+            }
+            return Ok(hotel);
         }
 
         // POST api/<HotelsController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        public ActionResult<Hotel> Post([FromBody] Hotel newHotel)
         {
+            if (hotels.Any(h => h.Id == newHotel.Id))
+            {
+                return BadRequest("Id already exists");
+            }
+            hotels.Add(newHotel);
+            return CreatedAtAction(nameof(Get), new { id = newHotel.Id }, newHotel);
         }
 
         // PUT api/<HotelsController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public ActionResult<Hotel> Put(int id, [FromBody] Hotel updatedHotel)
         {
+            var existingHotel = hotels.FirstOrDefault(h => h.Id == id);
+
+            if (existingHotel == null)
+            {
+                return NotFound();
+            }
+
+            existingHotel.Name = updatedHotel.Name;
+            existingHotel.Address = updatedHotel.Address;
+            existingHotel.Rating = updatedHotel.Rating;
+
+            return NoContent();
         }
 
         // DELETE api/<HotelsController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public ActionResult Delete(int id)
         {
+            var hotel = hotels.FirstOrDefault(h => h.Id == id);
+
+            if (hotel == null)
+            {
+                return NotFound(new { message = "Hotel not found" });
+            }
+
+            hotels.Remove(hotel);
+            return NoContent();
         }
     }
 }
