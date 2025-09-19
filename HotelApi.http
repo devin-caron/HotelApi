@@ -35,3 +35,37 @@ Content-Type: application/json
 }
 
 ###
+
+GET {{HotelApi_HostAddress}}/api/countries
+
+###
+
+GET {{HotelApi_HostAddress}}/api/countries
+
+###
+
+POST {{HotelApi_HostAddress}}/api/countries
+Content-Type: application/json
+
+{
+  //Country
+}
+
+###
+
+DELETE {{HotelApi_HostAddress}}/api/countries/{{id}}
+
+###
+
+GET {{HotelApi_HostAddress}}/api/countries/{{id}}
+
+###
+
+PUT {{HotelApi_HostAddress}}/api/countries/{{id}}
+Content-Type: application/json
+
+{
+  //Country
+}
+
+###
