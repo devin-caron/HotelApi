@@ -1,4 +1,6 @@
 ﻿using HotelApi.Data;
+using HotelApi.DTOs.Country;
+using HotelApi.DTOs.Hotel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,35 +19,63 @@ public class CountriesController : ControllerBase
 
     // GET: api/Countries
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Country>>> GetCountries()
+    public async Task<ActionResult<IEnumerable<GetCountriesDto>>> GetCountries()
     {
-        return await _context.Countries.ToListAsync();
+        var countries = await _context.Countries
+            .Select(c => new GetCountriesDto(
+                    c.CountryId,
+                    c.Name,
+                    c.ShortName
+                ))
+            .ToListAsync();
+
+        return Ok(countries);
     }
 
     // GET: api/Countries/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<Country>> GetCountry(int id)
+    public async Task<ActionResult<GetCountryDto>> GetCountry(int id)
     {
         var country = await _context.Countries
-            .Include(c => c.Hotels)
-            .FirstOrDefaultAsync(c => c.CountryId == id);
+            .Where(c => c.CountryId == id)
+            .Select(c => new GetCountryDto(
+                    c.CountryId,
+                    c.Name,
+                    c.ShortName,
+                    c.Hotels.Select(h => new GetHotelSlimDto(
+                        h.Id,
+                        h.Name,
+                        h.Address,
+                        h.Rating
+                    )).ToList()
+            ))
+            .FirstOrDefaultAsync();
 
         if (country == null)
         {
             return NotFound();
         }
 
-        return country;
+        return Ok(country);
     }
 
     // PUT: api/Countries/5
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutCountry(int id, Country country)
+    public async Task<IActionResult> PutCountry(int id, UpdateCountryDto updateCountryDto)
     {
-        if (id != country.CountryId)
+        if (id != updateCountryDto.CountryId)
         {
             return BadRequest();
         }
+
+        var country = await _context.Countries.FindAsync(id);
+        if (country == null)
+        {
+            return NotFound();
+        }
+        country.Name = updateCountryDto.Name;
+        country.ShortName = updateCountryDto.ShortName;
+
 
         _context.Entry(country).State = EntityState.Modified;
 
@@ -70,12 +100,25 @@ public class CountriesController : ControllerBase
 
     // POST: api/Countries
     [HttpPost]
-    public async Task<ActionResult<Country>> PostCountry(Country country)
+    public async Task<ActionResult<GetCountryDto>> PostCountry(CreateCountryDto createCountryDto)
     {
+        var country = new Country
+        {
+            Name = createCountryDto.Name,
+            ShortName = createCountryDto.ShortName
+        };
+
         _context.Countries.Add(country);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction("GetCountry", new { id = country.CountryId }, country);
+        var resultDto = new GetCountryDto(
+            country.CountryId,
+            country.Name,
+            country.ShortName,
+            []
+        );
+
+        return CreatedAtAction(nameof(GetCountry), new { id = country.CountryId }, resultDto);
     }
 
     // DELETE: api/Countries/5
