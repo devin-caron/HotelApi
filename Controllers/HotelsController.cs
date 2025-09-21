@@ -97,7 +97,7 @@ public class HotelsController : ControllerBase
 
     // POST: api/Hotels
     [HttpPost]
-    public async Task<ActionResult<Hotel>> PostHotel(CreateHotelDto hotelDto)
+    public async Task<ActionResult<GetHotelsDto>> PostHotel(CreateHotelDto hotelDto)
     {
         var hotel = new Hotel
         {
@@ -109,7 +109,15 @@ public class HotelsController : ControllerBase
         _context.Hotels.Add(hotel);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction("GetHotel", new { id = hotel.Id }, hotel);
+        var resultDto = new GetHotelsDto(
+            hotel.Id,
+            hotel.Name,
+            hotel.Address,
+            hotel.Rating,
+            hotel.CountryId
+        );
+
+        return CreatedAtAction(nameof(GetHotel), new { id = hotel.Id }, resultDto);
     }
 
     // DELETE: api/Hotels/5
