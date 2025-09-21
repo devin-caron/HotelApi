@@ -19,15 +19,8 @@ public class CountriesService(HotelDbContext context) : ICountriesService
     {
         var country = await context.Countries
             .Where(c => c.CountryId == id)
-            .Select(c => new GetCountryDto(
-                    c.CountryId,
-                    c.Name,
-                    c.ShortName,
-                    c.Hotels.Select(h => new GetHotelSlimDto(
-                        h.Id,
-                        h.Name,
-                        h.Address,
-                        h.Rating
+            .Select(c => new GetCountryDto(c.CountryId, c.Name, c.ShortName,
+                    c.Hotels.Select(h => new GetHotelSlimDto(h.Id, h.Name, h.Address, h.Rating
                     )).ToList()
             ))
             .FirstOrDefaultAsync();
@@ -65,10 +58,14 @@ public class CountriesService(HotelDbContext context) : ICountriesService
 
     public async Task DeleteCountryAsync(int id)
     {
-        var country = await context.Countries.FindAsync(id) ??
-                throw new KeyNotFoundException("Country not found");
-        context.Countries.Remove(country);
-        await context.SaveChangesAsync();
+        //var country = await context.Countries.FindAsync(id) ??
+        //        throw new KeyNotFoundException("Country not found");
+        //context.Countries.Remove(country);
+        //await context.SaveChangesAsync();
+
+        var country = await context.Countries
+            .Where(c => c.CountryId == id)
+            .ExecuteDeleteAsync();
     }
 
     public async Task<bool> CountryExistsAsync(int id)
