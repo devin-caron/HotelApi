@@ -1,4 +1,6 @@
+using HotelApi.Contracts;
 using HotelApi.Data;
+using HotelApi.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 
@@ -7,6 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("HotelDbConnectionString");
 builder.Services.AddDbContext<HotelDbContext>(options => options.UseSqlServer(connectionString));
+
+builder.Services.AddScoped<ICountriesService, CountriesService>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
