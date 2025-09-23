@@ -10,6 +10,6 @@ public interface ICountriesService
     Task<Result<GetCountryDto>> CreateCountryAsync(CreateCountryDto createCountryDto);
     Task<Result> DeleteCountryAsync(int id);
     Task<Result<IEnumerable<GetCountriesDto>>> GetCountriesAsync();
-    Task<Result<GetCountryDto?>> GetCountryAsync(int id);
+    Task<Result<GetCountryDto>> GetCountryAsync(int id);
     Task<Result> UpdateCountryAsync(int id, UpdateCountryDto updateCountryDto);
 }

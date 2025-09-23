@@ -11,7 +11,9 @@ public class HotelMappingProfile : Profile
     {
         CreateMap<Hotel, GetHotelDto>()
             .ForMember(d => d.Country, cfg => cfg.MapFrom<CountryNameResolver>());
+        CreateMap<Hotel, GetHotelSlimDto>(); // Added for Country -> GetCountryDto nested projection
         CreateMap<GetHotelDto, Hotel>();
+        CreateMap<CreateHotelDto, Hotel>();
     }
 }
 

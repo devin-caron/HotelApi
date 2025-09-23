@@ -1,38 +1,35 @@
-﻿using HotelApi.Contracts;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using HotelApi.Constants;
+using HotelApi.Contracts;
 using HotelApi.Data;
 using HotelApi.DTOs.Country;
-using HotelApi.DTOs.Hotel;
 using HotelApi.Results;
 using Microsoft.EntityFrameworkCore;
 
 namespace HotelApi.Services;
 
-public class CountriesService(HotelDbContext context) : ICountriesService
+public class CountriesService(HotelDbContext context, IMapper mapper) : ICountriesService
 {
     public async Task<Result<IEnumerable<GetCountriesDto>>> GetCountriesAsync()
     {
         var countries = await context.Countries
-            .Select(c => new GetCountriesDto(c.CountryId, c.Name, c.ShortName))
+            .ProjectTo<GetCountriesDto>(mapper.ConfigurationProvider)
             .ToListAsync();
 
         return Result<IEnumerable<GetCountriesDto>>.Success(countries);
     }
 
-    public async Task<Result<GetCountryDto?>> GetCountryAsync(int id)
+    public async Task<Result<GetCountryDto>> GetCountryAsync(int id)
     {
         var country = await context.Countries
-            .Where(c => c.CountryId == id)
-            .Select(c => new GetCountryDto(c.CountryId, c.Name, c.ShortName,
-                    c.Hotels.Select(h => new GetHotelSlimDto(h.Id, h.Name, h.Address, h.Rating
-                    )).ToList()
-            ))
+            .Where(q => q.CountryId == id)
+            .ProjectTo<GetCountryDto>(mapper.ConfigurationProvider)
             .FirstOrDefaultAsync();
 
-#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
         return country is null
-            ? Result<GetCountryDto>.NotFound()
+            ? Result<GetCountryDto>.Failure(new Error(ErrorCodes.NotFound, $"Country '{id}' was not found."))
             : Result<GetCountryDto>.Success(country);
-#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
     }
 
     public async Task<Result<GetCountryDto>> CreateCountryAsync(CreateCountryDto createCountryDto)
@@ -42,29 +39,23 @@ public class CountriesService(HotelDbContext context) : ICountriesService
             var exists = await CountryExistsAsync(createCountryDto.Name);
             if (exists)
             {
-                return Result<GetCountryDto>.Failure(new Error("Conflict", $"Country with name '{createCountryDto.Name}' already exists."));
+                return Result<GetCountryDto>.Failure(new Error(ErrorCodes.Conflict, $"Country with name '{createCountryDto.Name}' already exists."));
             }
 
-            var country = new Country
-            {
-                Name = createCountryDto.Name,
-                ShortName = createCountryDto.ShortName
-            };
+            var country = mapper.Map<Country>(createCountryDto);
             context.Countries.Add(country);
             await context.SaveChangesAsync();
 
-            var dto = new GetCountryDto(
-                country.CountryId,
-                country.Name,
-                country.ShortName,
-                []
-            );
+            var dto = await context.Countries
+                .Where(c => c.CountryId == country.CountryId)
+                .ProjectTo<GetCountryDto>(mapper.ConfigurationProvider)
+                .FirstAsync();
 
             return Result<GetCountryDto>.Success(dto);
         }
         catch (Exception)
         {
-            return Result<GetCountryDto>.Failure();
+            return Result<GetCountryDto>.Failure(new Error(ErrorCodes.Failure, "An unexpected error occured while creating country"));
         }
     }
 
@@ -74,23 +65,22 @@ public class CountriesService(HotelDbContext context) : ICountriesService
         {
             if (id != updateCountryDto.CountryId)
             {
-                return Result.BadRequest(new Error("Validation", "Id route does not match payload id."));
+                return Result.BadRequest(new Error(ErrorCodes.Validation, "Id route does not match payload id."));
             }
 
             var country = await context.Countries.FindAsync(id);
             if (country is null)
             {
-                return Result.NotFound(new Error("NotFound", $"Country - '{id}' was not found."));
+                return Result.NotFound(new Error(ErrorCodes.NotFound, $"Country - '{id}' was not found."));
             }
 
             var duplicateName = await CountryExistsAsync(updateCountryDto.Name);
             if (duplicateName)
             {
-                return Result.Failure(new Error("Conflict", $"Country - '{updateCountryDto.Name}' already exists."));
+                return Result.Failure(new Error(ErrorCodes.Conflict, $"Country - '{updateCountryDto.Name}' already exists."));
             }
 
-            country.Name = updateCountryDto.Name;
-            country.ShortName = updateCountryDto.ShortName;
+            mapper.Map(updateCountryDto, country);
             context.Countries.Update(country);
             await context.SaveChangesAsync();
 
@@ -98,7 +88,7 @@ public class CountriesService(HotelDbContext context) : ICountriesService
         }
         catch (Exception)
         {
-            return Result.Failure();
+            return Result.Failure(new Error(ErrorCodes.Failure, "An unexpected error occurred while updating the country."));
         }
     }
 
@@ -109,7 +99,7 @@ public class CountriesService(HotelDbContext context) : ICountriesService
             var country = await context.Countries.FindAsync(id);
             if (country is null)
             {
-                return Result.NotFound(new Error("NotFound", $"Country - '{id}' was not found."));
+                return Result.NotFound(new Error(ErrorCodes.NotFound, $"Country - '{id}' was not found."));
             }
 
             context.Countries.Remove(country);
@@ -119,7 +109,7 @@ public class CountriesService(HotelDbContext context) : ICountriesService
         }
         catch (Exception)
         {
-            return Result.Failure();
+            return Result.Failure(new Error(ErrorCodes.Failure, "An unexpected error occurred while deleting the country."));
         }
     }
 
