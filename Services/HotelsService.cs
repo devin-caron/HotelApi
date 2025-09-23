@@ -15,7 +15,8 @@ public class HotelsService(HotelDbContext context, ICountriesService countriesSe
     {
         var hotels = await context.Hotels
             .Include(c => c.Country)
-            .ProjectTo<GetHotelDto>(mapper.ConfigurationProvider)
+            .Select(h => new GetHotelDto(h.Id, h.Name, h.Address, h.Rating, h.CountryId, h.Country!.Name))
+            //.ProjectTo<GetHotelDto>(mapper.ConfigurationProvider)
             .ToListAsync();
 
         return Result<IEnumerable<GetHotelDto>>.Success(hotels);
