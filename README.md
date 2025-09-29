@@ -1,6 +1,6 @@
 HotelApi is a Hotel tracking API built in ASP.NET Core Web API with C#. In this application users can keep track of all Hotels and their information in their desired country.
 
-- Developed a RESTful API using C# and ASP.NET Core Web API to allow users to view Hotels and Countries they are located </br>
+- Developed a RESTful API using C# and ASP.NET Core Web API to allow users to view Hotels and Countries where they are located </br>
 - Implemented CRUD operations for stocks and comments, enabling users/admins to add, update, view, and delete Hotel and Country entries </br>
 - Designed a relational database with Entity Framework Core, modeling Hotels, and Countries with proper relationships</br>
 - Configured using best practices with AutoMapper, Data Transfer Objects (DTOs) and Result Pattern to control the data sent to and from the API, making the code cleaner and more secure</br>
