@@ -1,11 +1,13 @@
 ﻿using HotelApi.Contracts;
 using HotelApi.DTOs.Country;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
 public class CountriesController(ICountriesService countriesService) : BaseApiController
 {
     // GET: api/Countries
@@ -28,6 +30,7 @@ public class CountriesController(ICountriesService countriesService) : BaseApiCo
 
     // PUT: api/Countries/5
     [HttpPut("{id}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> PutCountry(int id, UpdateCountryDto updateCountryDto)
     {
         var result = await countriesService.UpdateCountryAsync(id, updateCountryDto);
@@ -36,6 +39,7 @@ public class CountriesController(ICountriesService countriesService) : BaseApiCo
 
     // POST: api/Countries
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<GetCountryDto>> PostCountry(CreateCountryDto createCountryDto)
     {
         var result = await countriesService.CreateCountryAsync(createCountryDto);
@@ -46,6 +50,7 @@ public class CountriesController(ICountriesService countriesService) : BaseApiCo
 
     // DELETE: api/Countries/5
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteCountry(int id)
     {
         var result = await countriesService.DeleteCountryAsync(id);

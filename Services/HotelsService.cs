@@ -4,7 +4,7 @@ using HotelApi.Constants;
 using HotelApi.Contracts;
 using HotelApi.Data;
 using HotelApi.DTOs.Hotel;
-using HotelApi.Results;
+using HotelApi.Result;
 using Microsoft.EntityFrameworkCore;
 
 namespace HotelApi.Services;
@@ -63,23 +63,23 @@ public class HotelsService(HotelDbContext context, ICountriesService countriesSe
         return Result<GetHotelDto>.Success(dto);
     }
 
-    public async Task<Result> UpdateHotelAsync(int id, UpdateHotelDto updateHotelDto)
+    public async Task<Result.Result> UpdateHotelAsync(int id, UpdateHotelDto updateHotelDto)
     {
         if (id != updateHotelDto.Id)
         {
-            return Result.BadRequest(new Error(ErrorCodes.Validation, "Id route value does not match payload Id."));
+            return Result.Result.BadRequest(new Error(ErrorCodes.Validation, "Id route value does not match payload Id."));
         }
 
         var hotel = await context.Hotels.FindAsync(id);
         if (hotel is null)
         {
-            return Result.NotFound(new Error(ErrorCodes.NotFound, $"Hotel '{id}' was not found."));
+            return Result.Result.NotFound(new Error(ErrorCodes.NotFound, $"Hotel '{id}' was not found."));
         }
 
         var countryExists = await countriesService.CountryExistsAsync(updateHotelDto.CountryId);
         if (!countryExists)
         {
-            return Result.NotFound(new Error(ErrorCodes.NotFound, $"Country '{updateHotelDto.CountryId}' was not found."));
+            return Result.Result.NotFound(new Error(ErrorCodes.NotFound, $"Country '{updateHotelDto.CountryId}' was not found."));
         }
 
         mapper.Map(updateHotelDto, hotel);
@@ -87,10 +87,10 @@ public class HotelsService(HotelDbContext context, ICountriesService countriesSe
         context.Hotels.Update(hotel);
         await context.SaveChangesAsync();
 
-        return Result.Success();
+        return Result.Result.Success();
     }
 
-    public async Task<Result> DeleteHotelAsync(int id)
+    public async Task<Result.Result> DeleteHotelAsync(int id)
     {
         var affected = await context.Hotels
             .Where(q => q.Id == id)
@@ -98,10 +98,10 @@ public class HotelsService(HotelDbContext context, ICountriesService countriesSe
 
         if (affected == 0)
         {
-            return Result.NotFound(new Error(ErrorCodes.NotFound, $"Hotel '{id}' was not found."));
+            return Result.Result.NotFound(new Error(ErrorCodes.NotFound, $"Hotel '{id}' was not found."));
         }
 
-        return Result.Success();
+        return Result.Result.Success();
     }
 
     public async Task<bool> HotelExistsAsync(int id)

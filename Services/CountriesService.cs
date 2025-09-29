@@ -4,7 +4,7 @@ using HotelApi.Constants;
 using HotelApi.Contracts;
 using HotelApi.Data;
 using HotelApi.DTOs.Country;
-using HotelApi.Results;
+using HotelApi.Result;
 using Microsoft.EntityFrameworkCore;
 
 namespace HotelApi.Services;
@@ -59,57 +59,57 @@ public class CountriesService(HotelDbContext context, IMapper mapper) : ICountri
         }
     }
 
-    public async Task<Result> UpdateCountryAsync(int id, UpdateCountryDto updateCountryDto)
+    public async Task<Result.Result> UpdateCountryAsync(int id, UpdateCountryDto updateCountryDto)
     {
         try
         {
             if (id != updateCountryDto.CountryId)
             {
-                return Result.BadRequest(new Error(ErrorCodes.Validation, "Id route does not match payload id."));
+                return Result.Result.BadRequest(new Error(ErrorCodes.Validation, "Id route does not match payload id."));
             }
 
             var country = await context.Countries.FindAsync(id);
             if (country is null)
             {
-                return Result.NotFound(new Error(ErrorCodes.NotFound, $"Country - '{id}' was not found."));
+                return Result.Result.NotFound(new Error(ErrorCodes.NotFound, $"Country - '{id}' was not found."));
             }
 
             var duplicateName = await CountryExistsAsync(updateCountryDto.Name);
             if (duplicateName)
             {
-                return Result.Failure(new Error(ErrorCodes.Conflict, $"Country - '{updateCountryDto.Name}' already exists."));
+                return Result.Result.Failure(new Error(ErrorCodes.Conflict, $"Country - '{updateCountryDto.Name}' already exists."));
             }
 
             mapper.Map(updateCountryDto, country);
             context.Countries.Update(country);
             await context.SaveChangesAsync();
 
-            return Result.Success();
+            return Result.Result.Success();
         }
         catch (Exception)
         {
-            return Result.Failure(new Error(ErrorCodes.Failure, "An unexpected error occurred while updating the country."));
+            return Result.Result.Failure(new Error(ErrorCodes.Failure, "An unexpected error occurred while updating the country."));
         }
     }
 
-    public async Task<Result> DeleteCountryAsync(int id)
+    public async Task<Result.Result> DeleteCountryAsync(int id)
     {
         try
         {
             var country = await context.Countries.FindAsync(id);
             if (country is null)
             {
-                return Result.NotFound(new Error(ErrorCodes.NotFound, $"Country - '{id}' was not found."));
+                return Result.Result.NotFound(new Error(ErrorCodes.NotFound, $"Country - '{id}' was not found."));
             }
 
             context.Countries.Remove(country);
             await context.SaveChangesAsync();
 
-            return Result.Success();
+            return Result.Result.Success();
         }
         catch (Exception)
         {
-            return Result.Failure(new Error(ErrorCodes.Failure, "An unexpected error occurred while deleting the country."));
+            return Result.Result.Failure(new Error(ErrorCodes.Failure, "An unexpected error occurred while deleting the country."));
         }
     }
 

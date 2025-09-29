@@ -1,5 +1,5 @@
 ﻿using HotelApi.DTOs.Hotel;
-using HotelApi.Results;
+using HotelApi.Result;
 
 namespace HotelApi.Contracts;
 
@@ -10,6 +10,6 @@ public interface IHotelsService
     Task<Result<IEnumerable<GetHotelDto>>> GetHotelsAsync();
     Task<Result<GetHotelDto>> GetHotelAsync(int id);
     Task<Result<GetHotelDto>> CreateHotelAsync(CreateHotelDto createHotelDto);
-    Task<Result> UpdateHotelAsync(int id, UpdateHotelDto updateHotelDto);
-    Task<Result> DeleteHotelAsync(int id);
+    Task<Result.Result> UpdateHotelAsync(int id, UpdateHotelDto updateHotelDto);
+    Task<Result.Result> DeleteHotelAsync(int id);
 }

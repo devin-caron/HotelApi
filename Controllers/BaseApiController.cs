@@ -1,5 +1,5 @@
 ﻿using HotelApi.Constants;
-using HotelApi.Results;
+using HotelApi.Result;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelApi.Controllers;
@@ -9,7 +9,7 @@ public abstract class BaseApiController : ControllerBase
     protected ActionResult<T> ToActionResult<T>(Result<T> result)
         => result.IsSuccess ? Ok(result.Value) : MapErrorsToResponse(result.Errors);
 
-    protected ActionResult ToActionResult(Result result)
+    protected ActionResult ToActionResult(Result.Result result)
         => result.IsSuccess ? NoContent() : MapErrorsToResponse(result.Errors);
 
     protected ActionResult MapErrorsToResponse(Error[] errors)
