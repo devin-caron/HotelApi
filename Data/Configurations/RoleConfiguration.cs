@@ -20,6 +20,12 @@ namespace HotelApi.Data.Configurations
                     Id = "fdae598e-9d14-4cd6-a31c-360d2ee39b23",
                     Name = "User",
                     NormalizedName = "USER"
+                },
+                new IdentityRole
+                {
+                    Id = "36aac992-4c8a-4527-9008-98394b071953",
+                    Name = "Hotel Admin",
+                    NormalizedName = "HOTEL ADMIN"
                 }
             );
         }
