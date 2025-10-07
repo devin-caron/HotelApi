@@ -73,10 +73,6 @@ app.MapGroup("api/defaultauth").MapIdentityApi<ApplicationUser>();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/openapi/v1.json", "Hotel Api");
-    });
 
     app.MapScalarApiReference();
 }
